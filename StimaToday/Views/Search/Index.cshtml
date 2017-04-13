@@ -1,0 +1,38 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using SimpleFeedReader;
+@using System.Collections.Generic;
+
+<div>
+    <p>
+        @using (Html.BeginForm())
+        {
+        <p>
+            @Html.TextBox("searchString")   
+            <input type="submit" value="Search" />
+            @{var listItems = new List<SelectListItem>
+                {
+                    new SelectListItem { Text = "Booyer-Moore", Value="Booyer-Moore Algorithm" },
+                    new SelectListItem { Text = "Knuth–Morris–Pratt", Value="Knuth–Morris–Pratt Algorithm" },
+                    new SelectListItem { Text = "Regex", Value="Regex" }
+                };
+            }
+            @Html.DropDownList("searchAlgo",new SelectList(listItems, "Value", "Text"))
+        </p>
+        }
+    </p>
+</div>
+
+<div>
+    @if (ViewBag.items != null)
+    {
+        <p id="Message"> searching keyword @ViewData["Message"] with @ViewData["Algo"] </p>
+        foreach (var item in ViewBag.items)
+        {
+            <p> <strong>@((item as FeedItem).Title) </strong> </p>
+            <p> @((item as FeedItem).Summary) </p>
+            <hr />
+        }
+    }
+</div>
