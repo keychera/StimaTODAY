@@ -27,10 +27,13 @@
 <div>
     @if (ViewBag.items != null)
     {
-        <p id="Message"> searching keyword @ViewData["Message"] with @ViewData["Algo"] </p>
+        <p> testing HtmlAgility pack</p>
+        <p> @ViewData["Message"]</p>
+        <hr />
+        <p id="Message"> searching keyword @ViewData["Keywords"] with @ViewData["Algo"] </p>
         foreach (var item in ViewBag.items)
         {
-            <p> <strong>@((item as FeedItem).Title) </strong> </p>
+            <p> <strong> @((item as FeedItem).Title)    <a class="btn btn-default" href=@((item as FeedItem).Uri) target="_blank">Go to site</a></strong> </p>
             <p> @((item as FeedItem).Summary) </p>
             <hr />
         }
