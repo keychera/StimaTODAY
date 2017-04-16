@@ -1,12 +1,13 @@
 ﻿using HtmlAgilityPack;
 using SimpleFeedReader;
 using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
+using StimaToday.Models;
 
 namespace StimaToday.Controllers
 {
@@ -19,25 +20,32 @@ namespace StimaToday.Controllers
             if (!String.IsNullOrEmpty(searchString))
             {
                 var items = feed.RetrieveFeed("http://www.antaranews.com/rss/terkini");
+                ArrayList result = new ArrayList();
+                Finder f = new Finder();
+                string searchResult = "";
                 //using htmlagilitypack here
                 HtmlDocument htmlDoc = new HtmlDocument();
                 using (var actualArticle = new HttpClient())
                 {
-                    var response = actualArticle.GetAsync(items.ElementAt(0).Uri).Result;
-                    if (response.IsSuccessStatusCode)
+                    foreach (var item in items)
                     {
-                        var responseContent = response.Content;
-                        htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
+                        var response = actualArticle.GetAsync((item as FeedItem).Uri).Result;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var responseContent = response.Content;
+                            htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
+                            HtmlNode node = htmlDoc.DocumentNode.SelectNodes("//div[@id='content_news']").First();
+                            if (f.kmpMatch(node.InnerText, searchString, ref searchResult))
+                            {
+                                (item as FeedItem).Content = searchResult;
+                                result.Add(item);
+                            }
+                        }
                     }
                 }
-                //buat ambil artikelnya, but setiap sumber berita, idnya beda2 buat artikelnya
-                //yang ini buat antaranews
-                HtmlNode node = htmlDoc.DocumentNode.SelectNodes("//div[@id='content_news']").First();
-                ViewData["Message"] = node.InnerText;
-
                 ViewData["Keywords"] = searchString;
                 ViewData["Algo"] = searchAlgo;
-                ViewBag.items = items;
+                ViewBag.items = result;
             }
             return View();
         }
