@@ -35,10 +35,22 @@ namespace StimaToday.Controllers
                             var responseContent = response.Content;
                             htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
                             HtmlNode node = htmlDoc.DocumentNode.SelectNodes("//div[@id='content_news']").First();
-                            if (f.kmpMatch(node.InnerText, searchString, ref searchResult))
+                            if (searchAlgo.Equals("Booyer-Moore Algorithm"))
                             {
-                                (item as FeedItem).Content = searchResult;
-                                result.Add(item);
+                                if (f.booyerMoore(node.InnerText, searchString, ref searchResult))
+                                {
+                                    (item as FeedItem).Content = searchResult;
+                                    result.Add(item);
+                                }
+                            }
+                            else
+                            if (searchAlgo.Equals("Knuth–Morris–Pratt Algorithm"))
+                            {
+                                if (f.kmpMatch(node.InnerText, searchString, ref searchResult))
+                                {
+                                    (item as FeedItem).Content = searchResult;
+                                    result.Add(item);
+                                }
                             }
                         }
                     }
