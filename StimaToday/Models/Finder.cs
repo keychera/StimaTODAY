@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using HtmlAgilityPack;
 
 namespace StimaToday.Models
 {
     public class Finder
     {
-        const int numberOfChars = 256;
-        private string pattern;
-        private string text;
+        const int numberOfChars = 256; //kode karakter dalam ASCII
 
         int max(int a, int b)
         {
@@ -20,18 +14,25 @@ namespace StimaToday.Models
                 return b;
         }
 
-        public void getSentence(ref string searchResult, int match, string originalText)
-        {
+        public void getSentence(ref string searchResult, int match, string text, string pattern)
+        //Prosedur yang fungsinya mendapatkan sebuah kalimat yang mengandung keyword
+        //Hasil ditaruh di searchResult
+        //match merupakan lokasi awal pattern pada text
+        {    
             int kiri = match;
             int kanan = match + pattern.Length - 1;
-            while (!text[kiri].Equals('.') && !text[kiri].Equals('>') && (kiri > 0))
+            while (kiri >= 0 && !text[kiri].Equals('.') && !text[kiri].Equals('>'))
                 kiri--;
-            while (!text[kanan].Equals('.') && !text[kanan].Equals('<'))
+            while (kanan < text.Length && !text[kanan].Equals('.') && !text[kanan].Equals('<'))
                 kanan++;
-            searchResult = originalText.Substring(kiri + 1, kanan - kiri);
+            if (kiri < 0) kiri = 0;
+            if (kanan >= text.Length) kanan = text.Length - 1;
+            searchResult = text.Substring(kiri + 1, kanan - kiri); 
         }
 
         public void computeLastOccurence(string pattern, int[] b)
+        //Mengkomputasi last occurence karakter-karakter pattern
+        //Digunakan untuk algoritma Booyer Moore
         {
             for (int i = 0; i < numberOfChars; i++)
                 b[i] = -1;
@@ -43,8 +44,8 @@ namespace StimaToday.Models
         {
             int match = 0;
             Boolean found = false;
-            text = t.ToLower();
-            pattern = p.ToLower();
+            string text = t.ToLower();
+            string pattern = p.ToLower();
             int n = text.Length;
             int m = pattern.Length;
             int[] b = new int[numberOfChars];
@@ -53,22 +54,24 @@ namespace StimaToday.Models
             while ((s <= (n - m)) && !found)
             {
                 int j = m - 1;
-                while (j >= 0 && pattern[j] == text[j + s])
-                    j--;
-                if (j < 0)
+                while (j >= 0 && pattern[j].Equals(text[j + s])) //selama pattern cocok dengan text
+                    j--;  //terus mundur
+                if (j < 0)  //pattern ditemukan pada text
                 {
                     found = true;
-                    match = s;
+                    match = s;  //lokasi awal pattern pada text
                 }
                 else
-                    s += max(1, j - b[(int)text[j + s]]);
+                    s += max(1, j - b[(int)text[j + s]]);  //case 1 atau case 2 dari booyer moore
             }
             if (found)
-                getSentence(ref searchResult, match, t);
+                getSentence(ref searchResult, match, t, p);
             return found;
         }
 
         public void computeFail(string pattern, int[] b)
+        //Mengkomputasi panjang substring suffix pada prefix
+        //Digunakan untuk algoritma KMP
         {
             b[0] = 0;
             int m = pattern.Length;
@@ -96,8 +99,8 @@ namespace StimaToday.Models
         {
             int match = 0;
             Boolean found = false;
-            text = t.ToLower();
-            pattern = p.ToLower();
+            string text = t.ToLower();
+            string pattern = p.ToLower();
             int n = text.Length;
             int m = pattern.Length;
             int[] b = new int[m];
@@ -106,23 +109,23 @@ namespace StimaToday.Models
             int j = 0;
             while ((i < n) && (!found))
             {
-                if (pattern[j].Equals(text[i]))
+                if (pattern[j].Equals(text[i]))  //jika karakter j pattern cocok dengan text
                 {
-                    if (j == m - 1)
+                    if (j == m - 1)  //pattern ditemukan pada text
                     {
                         found = true;
-                        match = i - m + 1;
+                        match = i - m + 1;  //lokasi awal pattern pada text
                     }
                     i++;
                     j++;
                 }
-                else if (j > 0)
+                else if (j > 0) 
                     j = b[j - 1];
                 else
                     i++;
             }
             if (found)
-                getSentence(ref searchResult, match, t);
+                getSentence(ref searchResult, match, t, p);
             return found;
         }
 
