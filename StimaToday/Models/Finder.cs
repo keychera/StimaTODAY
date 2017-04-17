@@ -28,7 +28,7 @@ namespace StimaToday.Models
                 kiri--;
             while (!text[kanan].Equals('.') && !text[kanan].Equals('<'))
                 kanan++;
-            searchResult = originalText.Substring(kiri + 1, kanan - kiri + 1);
+            searchResult = originalText.Substring(kiri + 1, kanan - kiri);
         }
 
         public void computeLastOccurence(string pattern, int[] b)
@@ -61,7 +61,7 @@ namespace StimaToday.Models
                     match = s;
                 }
                 else
-                    s += max(1, j - b[text[j + s]]);
+                    s += max(1, j - b[(int)text[j + s]]);
             }
             if (found)
                 getSentence(ref searchResult, match, t);
