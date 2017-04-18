@@ -50,6 +50,15 @@ namespace StimaToday.Controllers
                                     result.Add(item);
                                 }
                             }
+                            else
+                            if (searchAlgo.Equals("Regex"))
+                            {
+                                if (f.regex(node.InnerText, searchString, ref searchResult))
+                                {
+                                    (item as FeedItem).Content = searchResult;
+                                    result.Add(item);
+                                }
+                            }
                         }
                     }
                 }

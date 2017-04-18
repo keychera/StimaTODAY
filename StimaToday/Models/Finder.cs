@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace StimaToday.Models
 {
@@ -136,6 +137,35 @@ namespace StimaToday.Models
             return found;
         }
 
-        
+        public Boolean regex(string t, string p, ref string searchResult)
+        {
+            Boolean found = false;
+            Regex rgx = new Regex(p, RegexOptions.IgnoreCase);
+            MatchCollection matches = rgx.Matches(t);
+
+            //kalau ketemu
+            if (matches.Count > 0)
+            {
+                found = true;
+            }
+
+            Boolean pertama_ketemu = false; //buat dapet match pertama
+            if (found)
+            {
+                int ketemu=0;
+                foreach (Match match in matches)
+                {
+                    GroupCollection groups = match.Groups;
+                    if (!pertama_ketemu)
+                    {
+                        pertama_ketemu = true;
+                        ketemu = groups[0].Index;
+                    }
+                }
+
+                getSentence(ref searchResult, ketemu, t, p);
+            }
+            return found;
+        }
     }
 }
