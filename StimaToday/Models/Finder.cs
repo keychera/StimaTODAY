@@ -90,7 +90,7 @@ namespace StimaToday.Models
                 {
                     GroupCollection groups = match.Groups;
                     if (!pertama_ketemu)
-                    {
+                    {  
                         pertama_ketemu = true;
                         ketemu = groups[0].index;
                     }
