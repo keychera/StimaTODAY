@@ -76,6 +76,7 @@ namespace StimaToday.Models
             Regex rgx = new Regex(p, RegexOptions.IgnoreCase);
             MatchCollection matches = rgx.Matches(t);
 
+            //kalau ketemu
             if (matches.Count > 0)
             {
                 found = true;
@@ -84,19 +85,18 @@ namespace StimaToday.Models
             Boolean pertama_ketemu=false; //buat dapet match pertama
             if (found)
             {
+                int ketemu;
                 foreach (Match match in matches)
                 {
                     GroupCollection groups = match.Groups;
                     if (!pertama_ketemu)
                     {
                         pertama_ketemu = true;
-                        int ketemu = groups[0].index;
+                        ketemu = groups[0].index;
                     }
                 }
-            }
-            if (found)
-            {
-                    getSentence(ref searchResult, ketemu, t, p);
+
+                getSentence(ref searchResult, ketemu, t, p);
             }
             return found;
         }
