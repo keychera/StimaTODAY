@@ -43,6 +43,7 @@ namespace StimaToday.Models
         public Boolean booyerMoore(string t, string p, ref string searchResult)
         {
             int match = 0;
+            int temp;
             Boolean found = false;
             string text = t.ToLower();
             string pattern = p.ToLower();
@@ -62,7 +63,13 @@ namespace StimaToday.Models
                     match = s;  //lokasi awal pattern pada text
                 }
                 else
-                    s += max(1, j - b[(int)text[j + s]]);  //case 1 atau case 2 dari booyer moore
+                {
+                    temp = (int) text[j + s];
+                    if ((temp >= 0) && (temp <= 255))
+                        s += max(1, j - b[temp]);  //case 1 atau case 2 dari booyer moore
+                    else
+                        s += 1;
+                }
             }
             if (found)
                 getSentence(ref searchResult, match, t, p);
