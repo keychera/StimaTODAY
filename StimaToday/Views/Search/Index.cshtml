@@ -4,6 +4,7 @@
 @using SimpleFeedReader;
 @using System.Collections.Generic;
 @using HtmlAgilityPack;
+@using StimaToday.Models;
 
 <div>
     <p>
@@ -32,8 +33,9 @@
         <p id="Message"> searching keyword @ViewData["Keywords"] with @ViewData["Algo"] </p>
         foreach (var item in ViewBag.items)
         {
-            <p> <strong> @((item as FeedItem).Title)    <a class="btn btn-default" href=@((item as FeedItem).Uri) target="_blank">Go to site</a></strong> </p>
-            <p> @((item as FeedItem).Content) </p>
+            <p> <strong> @((item as FeedItem).Title)    <a class="btn btn-default" href=@((item as FeedItem).Uri) target="_blank"> Go to site </a></strong> </p>
+            <p> ... @((item as FeedItem).Content) ... </p>
+            <p> news from <i> @((item as SearchResultEntry).OriginalSource)</i></p>
             <hr />
         }
     }

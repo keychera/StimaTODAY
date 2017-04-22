@@ -6,57 +6,97 @@ using System.Linq;
 using System.Net.Http;
 using System.Web.Mvc;
 using StimaToday.Models;
+using System.Collections.Generic;
 
 namespace StimaToday.Controllers
 {
     public class SearchController : Controller
     {
+        private class newsSource
+        {
+            public IEnumerable<FeedItem> Feeds { get; set; }
+            public string OriginalSource { get; set; }
+            public string NewsHtmlIdentifier { get; set; }
+
+            public newsSource(IEnumerable<FeedItem> feeds, string source, string identifier)
+            {
+                Feeds = feeds;
+                OriginalSource = source;
+                NewsHtmlIdentifier = identifier;
+            }
+        }
+
         // GET: Search
         public ActionResult Index(string searchString, string searchAlgo)
         {
             var feed = new FeedReader();
             if (!String.IsNullOrEmpty(searchString))
             {
-                var items = feed.RetrieveFeed("http://www.antaranews.com/rss/terkini");
+                List<newsSource> newsSources = new List<newsSource>
+                {
+                    new newsSource(
+                        feed.RetrieveFeed("http://rss.detik.com/index.php/detikcom"),
+                        "detik.com",
+                        "//div[@id='detikdetailtext']"
+                        ),
+                    new newsSource(
+                        feed.RetrieveFeed("http://tempo.co/rss/terkini"),
+                        "tempo.com",
+                        "//div[@class='artikel']"
+                        ),
+                    new newsSource(
+                        feed.RetrieveFeed("http://rss.vivanews.com/get/all"),
+                        "vivanews.com",
+                        "//div[@id='article-content']"
+                        ),
+                    new newsSource(
+                        feed.RetrieveFeed("http://www.antaranews.com/rss/terkini"),
+                        "antaranews.com",
+                        "//div[@id='content_news']"
+                        )
+                };
                 ArrayList result = new ArrayList();
                 Finder f = new Finder();
-                string searchResult = "";
-                //using htmlagilitypack here
-                HtmlDocument htmlDoc = new HtmlDocument();
-                using (var actualArticle = new HttpClient())
-                {
-                    foreach (var item in items)
+                foreach (var source in newsSources) {
+                    var items = source.Feeds;
+                    string htmlIdentifier = source.NewsHtmlIdentifier;
+                    string searchResult = "";
+                    HtmlDocument htmlDoc = new HtmlDocument();
+                    using (var actualArticle = new HttpClient())
                     {
-                        var response = actualArticle.GetAsync((item as FeedItem).Uri).Result;
-                        if (response.IsSuccessStatusCode)
+                        foreach (var item in items)
                         {
-                            var responseContent = response.Content;
-                            htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
-                            HtmlNode node = htmlDoc.DocumentNode.SelectNodes("//div[@id='content_news']").First();
-                            if (searchAlgo.Equals("Booyer-Moore Algorithm"))
+                            var response = actualArticle.GetAsync((item as FeedItem).Uri).Result;
+                            if (response.IsSuccessStatusCode)
                             {
-                                if (f.booyerMoore(node.InnerText, searchString, ref searchResult))
+                                var responseContent = response.Content;
+                                htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
+                                HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(htmlIdentifier);
+                                if (nodes != null)
                                 {
-                                    (item as FeedItem).Content = searchResult;
-                                    result.Add(item);
-                                }
-                            }
-                            else
-                            if (searchAlgo.Equals("Knuth–Morris–Pratt Algorithm"))
-                            {
-                                if (f.kmpMatch(node.InnerText, searchString, ref searchResult))
-                                {
-                                    (item as FeedItem).Content = searchResult;
-                                    result.Add(item);
-                                }
-                            }
-                            else
-                            if (searchAlgo.Equals("Regex"))
-                            {
-                                if (f.regex(node.InnerText, searchString, ref searchResult))
-                                {
-                                    (item as FeedItem).Content = searchResult;
-                                    result.Add(item);
+                                    var node = nodes.First();
+                                    Boolean isSearchSuccess = false;
+                                    if (searchAlgo.Equals("Booyer-Moore Algorithm"))
+                                    {
+                                        isSearchSuccess = f.booyerMoore(node.InnerText, searchString, ref searchResult);
+                                    }
+                                    else
+                                    if (searchAlgo.Equals("Knuth–Morris–Pratt Algorithm"))
+                                    {
+                                        isSearchSuccess = f.kmpMatch(node.InnerText, searchString, ref searchResult);
+                                    }
+                                    else
+                                    if (searchAlgo.Equals("Regex"))
+                                    {
+                                        isSearchSuccess = f.regex(node.InnerText, searchString, ref searchResult);
+                                    }
+                                    if (isSearchSuccess)
+                                    {
+                                        var newItem = new SearchResultEntry(item as FeedItem);
+                                        (newItem as SearchResultEntry).Content = searchResult;
+                                        (newItem as SearchResultEntry).OriginalSource = source.OriginalSource;
+                                        result.Add(newItem);
+                                    }
                                 }
                             }
                         }
