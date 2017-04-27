@@ -33,11 +33,20 @@ namespace StimaToday.Controllers
                             var responseContent = response.Content;
                             htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
                             HtmlNode node = htmlDoc.DocumentNode.SelectNodes("//div[@id='content_news']").First();
+                            HtmlNodeCollection test = htmlDoc.DocumentNode.SelectNodes("//div[@id='image_news']");
+                            HtmlNode nodeImg = null;
+                            if (test != null) {
+                                nodeImg = test.First();
+                            }
                             if (searchAlgo.Equals("Booyer-Moore Algorithm"))
                             {
                                 if (f.booyerMoore(node.InnerText, searchString, ref searchResult))
                                 {
                                     (item as FeedItem).Content = searchResult;
+                                    if (nodeImg != null)
+                                    {
+                                        (item as FeedItem).Summary = nodeImg.InnerHtml;
+                                    }
                                     result.Add(item);
                                 }
                             }
@@ -47,6 +56,10 @@ namespace StimaToday.Controllers
                                 if (f.kmpMatch(node.InnerText, searchString, ref searchResult))
                                 {
                                     (item as FeedItem).Content = searchResult;
+                                    if (nodeImg != null)
+                                    {
+                                        (item as FeedItem).Summary = nodeImg.InnerHtml;
+                                    }
                                     result.Add(item);
                                 }
                             }
@@ -56,6 +69,10 @@ namespace StimaToday.Controllers
                                 if (f.regex(node.InnerText, searchString, ref searchResult))
                                 {
                                     (item as FeedItem).Content = searchResult;
+                                    if (nodeImg != null)
+                                    {
+                                        (item as FeedItem).Summary = nodeImg.InnerHtml;
+                                    }
                                     result.Add(item);
                                 }
                             }

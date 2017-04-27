@@ -32,8 +32,10 @@
         <p id="Message"> searching keyword @ViewData["Keywords"] with @ViewData["Algo"] </p>
         foreach (var item in ViewBag.items)
         {
+            <p>@((item as FeedItem).Date)</p>
             <p> <strong> @((item as FeedItem).Title)    <a class="btn btn-default" href=@((item as FeedItem).Uri) target="_blank">Go to site</a></strong> </p>
             <p> @((item as FeedItem).Content) </p>
+            <p> @Html.Raw( (item as FeedItem).Summary ) </p>
             <hr />
         }
     }
