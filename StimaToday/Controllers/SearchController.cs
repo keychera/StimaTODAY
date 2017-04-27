@@ -43,22 +43,16 @@ namespace StimaToday.Controllers
                         "//div[@class='pic_artikel']"
                         ),
                     new newsSource(
-                        feed.RetrieveFeed("http://tempo.co/rss/terkini"),
-                        "tempo.com",
-                        "//div[@class='artikel']",
-                        "//div[@class='row article-top clearfix']"
+                        feed.RetrieveFeed("http://www.antaranews.com/rss/terkini"),
+                        "antaranews.com",
+                        "//div[@id='content_news']",
+                        "//div[@id='image_news']"
                         ),
                     new newsSource(
                         feed.RetrieveFeed("http://rss.vivanews.com/get/all"),
                         "vivanews.com",
                         "//div[@id='article-content']",
-                        "//div[@id='thumbcontainer']"
-                        ),
-                    new newsSource(
-                        feed.RetrieveFeed("http://www.antaranews.com/rss/terkini"),
-                        "antaranews.com",
-                        "//div[@id='content_news']",
-                        "//div[@id='image_news']"
+                        "//div[@class='thumbcontainer']"
                         )
                 };
                 ArrayList result = new ArrayList();
