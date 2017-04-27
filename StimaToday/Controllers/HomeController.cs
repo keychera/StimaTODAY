@@ -15,7 +15,7 @@ namespace StimaToday.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
+            ViewBag.Message = "The last project for Stima.";
 
             return View();
         }

@@ -34,8 +34,10 @@
         foreach (var item in ViewBag.items)
         {
             <p> <strong> @((item as FeedItem).Title)    <a class="btn btn-default" href=@((item as FeedItem).Uri) target="_blank"> Go to site </a></strong> </p>
+            <p> @((item as FeedItem).Date) </p>
             <p> ... @((item as FeedItem).Content) ... </p>
             <p> news from <i> @((item as SearchResultEntry).OriginalSource)</i></p>
+            <p> @Html.Raw((item as SearchResultEntry).ImgHtmlRaw)</p>
             <hr />
         }
     }

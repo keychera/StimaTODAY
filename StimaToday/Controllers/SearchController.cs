@@ -17,12 +17,14 @@ namespace StimaToday.Controllers
             public IEnumerable<FeedItem> Feeds { get; set; }
             public string OriginalSource { get; set; }
             public string NewsHtmlIdentifier { get; set; }
+            public string ImgIdentifier { get; set; }
 
-            public newsSource(IEnumerable<FeedItem> feeds, string source, string identifier)
+            public newsSource(IEnumerable<FeedItem> feeds, string source, string identifier, string imgidentifier)
             {
                 Feeds = feeds;
                 OriginalSource = source;
                 NewsHtmlIdentifier = identifier;
+                ImgIdentifier = imgidentifier;
             }
         }
 
@@ -37,41 +39,57 @@ namespace StimaToday.Controllers
                     new newsSource(
                         feed.RetrieveFeed("http://rss.detik.com/index.php/detikcom"),
                         "detik.com",
-                        "//div[@id='detikdetailtext']"
+                        "//div[@id='detikdetailtext']",
+                        "//div[@class='pic_artikel']"
                         ),
                     new newsSource(
                         feed.RetrieveFeed("http://tempo.co/rss/terkini"),
                         "tempo.com",
-                        "//div[@class='artikel']"
+                        "//div[@class='artikel']",
+                        "//div[@class='row article-top clearfix']"
                         ),
                     new newsSource(
                         feed.RetrieveFeed("http://rss.vivanews.com/get/all"),
                         "vivanews.com",
-                        "//div[@id='article-content']"
+                        "//div[@id='article-content']",
+                        "//div[@id='thumbcontainer']"
                         ),
                     new newsSource(
                         feed.RetrieveFeed("http://www.antaranews.com/rss/terkini"),
                         "antaranews.com",
-                        "//div[@id='content_news']"
+                        "//div[@id='content_news']",
+                        "//div[@id='image_news']"
                         )
                 };
                 ArrayList result = new ArrayList();
                 Finder f = new Finder();
                 foreach (var source in newsSources) {
                     var items = source.Feeds;
-                    string htmlIdentifier = source.NewsHtmlIdentifier;
                     string searchResult = "";
                     HtmlDocument htmlDoc = new HtmlDocument();
                     using (var actualArticle = new HttpClient())
                     {
                         foreach (var item in items)
                         {
-                            var response = actualArticle.GetAsync((item as FeedItem).Uri).Result;
-                            if (response.IsSuccessStatusCode)
+                            HttpResponseMessage response;
+                            try
+                            {
+                                response = actualArticle.GetAsync((item as FeedItem).Uri).Result;
+                            } catch (Exception e)
+                            {
+                                response = null;
+                            }
+                            if (response.IsSuccessStatusCode && response != null)
                             {
                                 var responseContent = response.Content;
                                 htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
-                                HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(htmlIdentifier);
+                                HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes(source.NewsHtmlIdentifier);
+                                HtmlNodeCollection test = htmlDoc.DocumentNode.SelectNodes(source.ImgIdentifier);
+                                HtmlNode nodeImg = null;
+                                if (test != null)
+                                {
+                                    nodeImg = test.First();
+                                }
                                 if (nodes != null)
                                 {
                                     var node = nodes.First();
@@ -95,6 +113,13 @@ namespace StimaToday.Controllers
                                         var newItem = new SearchResultEntry(item as FeedItem);
                                         (newItem as SearchResultEntry).Content = searchResult;
                                         (newItem as SearchResultEntry).OriginalSource = source.OriginalSource;
+                                        if (nodeImg != null)
+                                        {
+                                            (newItem as SearchResultEntry).ImgHtmlRaw = nodeImg.InnerHtml;
+                                        } else
+                                        {
+                                            (newItem as SearchResultEntry).ImgHtmlRaw = "<i> no image </i>";
+                                        }
                                         result.Add(newItem);
                                     }
                                 }
