@@ -79,7 +79,7 @@ namespace StimaToday.Controllers
                             {
                                 response = null;
                             }
-                            if (response.IsSuccessStatusCode && response != null)
+                            if (response != null && response.IsSuccessStatusCode)
                             {
                                 var responseContent = response.Content;
                                 htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
